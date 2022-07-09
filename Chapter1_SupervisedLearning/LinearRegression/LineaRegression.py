@@ -93,7 +93,7 @@ if __name__ == '__main__':
                 w -= learning_rate
             else:
                 return w
-
+        raise Exception("Couldn't converge within %d iterations" % iterations)
 
     # Train the system
     w = train(X, Y, iterations=10_000, learning_rate=0.01)
@@ -104,10 +104,51 @@ if __name__ == '__main__':
     # w=1.844
     # Prediction for 20 reservations is 36.88 pizzas
 
+    # Adding a Bias (смещение)
+    # To draw a line that is not
+    # constrained to pass by the origin, we need one more parameter in our model:
+    # ŷ = x * w + b, where:
+    # w - weight // the slope of the linear
+    # b - bias   // the bias measures the “shift” of the line up or down the chart
+
+    def predict(X, w, b):
+        # predicts the pizzas from the reservations.
+        return X * w + b
 
 
+    def loss(X, Y, w, b):
+        return np.average((predict(X, w, b) - Y) ** 2)
 
+    def train(X: np.ndarray,
+              Y: np.ndarray,
+              iterations: int,
+              learning_rate: float
+              ) -> (float, float):
+        w = b = 0
+        for i in range(iterations):
+            current_loss = loss(X, Y, w, b)
+            print("Iteration %4d => Loss: %.6f" % (i, current_loss))
 
+            if loss(X, Y, w + learning_rate, b) < current_loss:
+                w += learning_rate
+            elif loss(X, Y, w - learning_rate, b) < current_loss:
+                w -= learning_rate
+            elif loss(X, Y, w, b + learning_rate) < current_loss:
+                b += learning_rate
+            elif loss(X, Y, w, b - learning_rate) < current_loss:
+                b -= learning_rate
+            else:
+                return w, b
+        raise Exception("Couldn't converge within %d iterations" % iterations)
+
+    # Train the system
+    w, b = train(X, Y, iterations=10000, learning_rate=0.01)
+    print("\nw=%.3f, b=%.3f" % (w, b))
+    # Predict the number of pizzas
+    print("Prediction for %d reservations is %.2f pizzas" % (20, predict(20, w, b)))
+    # Iteration 1551 => Loss: 22.863567
+    # w=1.100, b=12.930
+    # Prediction for 20 reservations is 34.93 pizzas
 
 
 
